@@ -139,6 +139,11 @@ bool menuEntryLoad(menuEntry_s* me, const char* name, bool shortcut) {
     strcpy(me->name, name);
     if (me->type == ENTRY_TYPE_FOLDER)
     {
+        // Hide theme folder
+        if (strncmp(me->path, "sdmc:/", 6) == 0 && strncmp(me->name, "themes", 6) == 0) {
+            return false;
+        } 
+
         //Check for <dirpath>/<dirname>.nro
         snprintf(tempbuf, sizeof(tempbuf)-1, "%.*s/%.*s.nro", (int)sizeof(tempbuf)/2, me->path, (int)sizeof(tempbuf)/2-7, name);
         bool found = fileExists(tempbuf);

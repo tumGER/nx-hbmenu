@@ -1,6 +1,7 @@
 #include <switch.h>
 #include <string.h>
 #include <stdio.h>
+#include <libconfig.h>
 
 #include "../common/common.h"
 #include "nx_touch.h"
@@ -17,6 +18,8 @@ u64 g_tickdiff_frame=0;
 void audio_initialize(void);
 void audio_exit(void);
 #endif
+
+config_t loadSettings();
 
 int main(int argc, char **argv)
 {
@@ -40,6 +43,8 @@ int main(int argc, char **argv)
 
     rc = plInitialize();
     if (R_FAILED(rc)) fatalSimple(-6);
+
+    loadSettings();
 
     themeStartup((ThemePreset)theme);
     textInit();
@@ -159,4 +164,24 @@ bool menuUpdate(void) {
     }
 
     return exitflag;
+}
+
+config_t loadSettings() {
+    config_t cfg;
+
+    config_init(&cfg);
+    if(!config_read_file(&cfg, "settings.cfg")) {
+        config_setting_t * root, * setting;
+        root = config_root_setting(&cfg);
+
+        ColorSetId theme;
+        setsysGetColorSetId(&theme);
+
+        setting = config_setting_add(root, "theme", CONFIG_TYPE_STRING);
+        config_setting_set_string(setting, (theme == ColorSetId_Light) ? "default-light" : "default-dark");
+
+        config_write_file(&cfg, "settings.cfg");
+    }
+
+    return cfg;
 }
